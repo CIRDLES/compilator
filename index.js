@@ -3,7 +3,7 @@ var fs = require('fs'),
 	compile = require('handlebars').compile,
 	jp = require('jsonpath'),
 	basename = require('path').basename,
-	merge = require('merge'),
+	merge = require('merge');
 
 exports.compilate = (options) => {
 	var defaultOptions = {
