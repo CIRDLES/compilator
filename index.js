@@ -5,24 +5,6 @@ var fs = require('fs'),
 	basename = require('path').basename,
 	merge = require('merge'),
 
-exports.setUpDirectories = (options) => {
-	var defaultOptions = {
-		templateDir: 'templates',
-		outDir: 'tests.out',
-		configDir: 'config',
-		directivesDir: 'config/directives',
-		schemasDir: 'schemas',
-		testDir: 'tests.json'
-	};
-
-	if (options == undefined) options = defaultOptions;
-	else options = merge(defaultOptions, options);
-
-	for (key in options)
-		fs.mkdirSync('./' + options[key]);
-
-}
-
 exports.compilate = (options) => {
 	var defaultOptions = {
 		templateDir: 'templates',
