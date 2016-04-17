@@ -1,0 +1,35 @@
+{
+	"template": "TestTemplate.java",
+	"replaces": "monolithicTest",
+	"schema": "redux.schema.json",
+	"steps": [
+		{
+			"type": "clickOn",
+			"options": {
+				"selectors": {
+					"type": "ET_JButton",
+					"text": "Last Sample"
+				}
+			}
+		},
+		{
+			"type": "mouseMove",
+			"options": {
+				"x": 400,
+				"y": 400
+			}
+		},
+		{
+			"type": "clickOnChildren",
+			"options": {
+				"selectors": {
+						"name": "JMenuBar",
+						"pk": "110"
+				}
+			}
+		},
+		{
+			"type": "clickOnAll"
+		}
+	]
+}
