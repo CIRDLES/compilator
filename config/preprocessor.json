@@ -1,7 +1,8 @@
 {
 	"clickOnChildren": {
-		"schemaSelector": "$..children[?({{#each selectors}}{{#unless @first}} && {{/unless}}@.{{@key}}==\"{{this}}\"{{/each}})]",
-		"schemaProperties": ["children"]
+		"schemaSelector": "$..children[?({{#each selectors}}{{#unless @first}} && {{/unless}}@.{{{@key}}}==\"{{{this}}}\"{{/each}})]",
+		"schemaProperties": ["children"],
+		"unique": true
 	},
 	"clickOnAll": {
 		"schemaSelector": "$..children[?(@.name && @.label)]"

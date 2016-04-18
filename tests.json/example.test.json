@@ -18,6 +18,18 @@
 				"x": 400,
 				"y": 400
 			}
+		},
+		{
+			"type": "clickOnChildren",
+			"options": {
+				"selectors": {
+					"name": "JMenuBar",
+					"pk": "110"
+				}
+			}
+		},
+		{
+			"type": "clickOnAll"
 		}
 	]
 }

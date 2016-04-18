@@ -3,8 +3,8 @@
 	"type": "clickOn",
 	"options": {
 		"selectors": {
-			"type": "{{this.name}}",
-			"text": "{{this.label}}"
+			"type": "{{{this.name}}}",
+			"text": "{{{this.label}}}"
 		}
 	}
 }{{#unless @last}},{{/unless}}

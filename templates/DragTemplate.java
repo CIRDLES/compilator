@@ -34,6 +34,7 @@ import java.awt.Robot;
 import static org.junit.Assert.*;
 import static com.athaydes.automaton.selector.StringSelectors.matchingAll;
 import java.awt.AWTException;
+import java.awt.event.InputEvent;
 
 /**
  *
@@ -64,7 +65,7 @@ public class ETReduxTest {
     
     @Test
     public void swingTest() {
-        {{{monolithicTest}}}
+        {{{dragTest}}}
 
         /* YOU MUST CHANGE THIS to make it possible for the test to fail */
         assertTrue(true);

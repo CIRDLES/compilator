@@ -1,0 +1,28 @@
+{
+	"template": "DragTemplate.java",
+	"replaces": "dragTest",
+	"schema": "redux.schema.json",
+	"wait": 1000,
+	"steps": [
+		{
+			"type": "mouseMove",
+			"options": {
+				"x": 640,
+				"y": 730
+			}
+		},
+		{
+			"type": "mouseDown"
+		},
+		{
+			"type": "mouseMove",
+			"options": {
+				"x": 640,
+				"y": 100
+			}
+		},
+		{
+			"type": "mouseUp"
+		}
+	]
+}
