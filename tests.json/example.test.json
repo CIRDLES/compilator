@@ -2,6 +2,7 @@
 	"template": "TestTemplate.java",
 	"replaces": "monolithicTest",
 	"schema": "redux.schema.json",
+	"wait": 500,
 	"steps": [
 		{
 			"type": "clickOn",
