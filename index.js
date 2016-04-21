@@ -1,47 +1,56 @@
-var fs = require('fs'),
-	glob = require('glob'),
+var fs = require('fs-promise'),
 	compile = require('handlebars').compile,
 	jp = require('jsonpath'),
 	basename = require('path').basename,
-	merge = require('merge');
+	merge = require('merge'),
+	promise = require('promise'),
+	glob = require('glob-fs')({ gitignore: true });
+
+
+var defaults = JSON.parse(fs.readFileSync('config/defaults.json', 'utf8'));
 
 exports.compilate = (options) => {
-	var defaultOptions = {
-		templateDir: 'templates',
-		outDir: 'tests.out',
-		configDir: 'config',
-		directivesDir: 'config/directives',
-		schemasDir: 'schemas',
-		testDir: 'tests.json'
-	};
+	if (options == undefined) options = defaults;
+	else options = merge(defaults, options);
 
-	if (options == undefined) options = defaultOptions;
-	else options = merge(defaultOptions, options);
 
-	var conversions = 
-		JSON.parse(fs.readFileSync(options.configDir + '/conversions.json', 'utf8'));
-
-	glob("tests.json/*.test.json", (err, files) => {
-		files.forEach((file) => {
-			fs.readFile(file, 'utf8', (err, data) => {
+	glob.readdirPromise(options.testDir + '/*.test.json')
+	.then(function(files) {
+		files.forEach(function (file) {
+			fs.readFile(file, 'utf8')
+			.then(function (contents, err) {
 				if (err) throw err;
-				var test = JSON.parse(data);
+				var test = JSON.parse(contents);
 				var schema = JSON.parse(fs.readFileSync(options.schemasDir + '/' + test.schema, 'utf8'));
-				preprocess(test, options, schema, (newSteps) => {
+				// preprocess all defined directives
+				preprocess(test, options, schema).then(function (newSteps) {
+					// the newly generated steps
 					test.steps = newSteps;
-					var templateFile = options.templateDir + '/' + test.template;
 
 					var languageCode = "";
-					test.steps.forEach((step) => {
+					var conversions = 
+						JSON.parse(fs.readFileSync('config/conversions.json', 'utf8'));
+
+					// compile each step into language-specific code
+					test.steps.forEach(function (step) {
 						languageCode += compile(conversions[step.type])(step.options) + '\n';
+
+						// interleave waits
 						if(test.hasOwnProperty("wait"))
 							languageCode += compile(conversions['wait'])({wait: test.wait}) + '\n';
 					});
 
-					fs.readFile(templateFile, 'utf8', (err, data) => {
-						opts = {};
+					// combine with template and write to file
+					var templateFile = options.templateDir + '/' + test.template;
+					fs.readFile(templateFile, 'utf8')
+					.then(function(contents, err) {
+						if (err) throw err;
+
+						var opts = {};
 						opts[test.replaces] = languageCode;
-						fs.writeFile(options.outDir + '/' + test.template, compile(data)(opts), (err) => {
+
+						fs.writeFile(options.outDir + '/' + test.template, compile(contents)(opts))
+						.then(function(err)  {
 							if (err) throw err;
 						});
 					});
@@ -51,26 +60,28 @@ exports.compilate = (options) => {
 	});
 };
 
-function preprocess (test, options, schema, cb) {
-	var preprocessor = JSON.parse(fs.readFileSync(options.configDir + '/preprocessor.json', 'utf8'));
+function preprocess (test, options, schema) {
+	return new Promise(function (fulfill, reject) {
+		var preprocessor = JSON.parse(fs.readFileSync('config/preprocessor.json', 'utf8'));
+		var directives = {};
+		var additions = [];
 
-	var directives = {};
-	var additions = [];
+		test.steps.forEach(function(step, index) {
+			// check if step is a directive
+			if (preprocessor.hasOwnProperty(step.type)) {
+				var processorVars = processStep(step, preprocessor, schema);
 
-	test.steps.forEach((step, index) => {
-		if (preprocessor.hasOwnProperty(step.type)) {
-			var processorVars = processStep(step, preprocessor, schema);
-
-			// memoize since we're blocking
-			if (directives[step.type] == undefined)
-				directives[step.type] = 
-					fs.readFileSync(options.directivesDir + '/' + step.type + '.directive', 'utf8');
-			
-			var newSteps = JSON.parse(compile(directives[step.type])(processorVars))
-			additions.push({steps: newSteps, originalPos: index});
-		}
+				// memoize since we're blocking
+				if (directives[step.type] == undefined)
+					directives[step.type] = 
+						fs.readFileSync(options.directivesDir + '/' + step.type + '.directive', 'utf8');
+				
+				var newSteps = JSON.parse(compile(directives[step.type])(processorVars))
+				additions.push({steps: newSteps, originalPos: index});
+			}
+		});
+		fulfill(insertSteps(test.steps, additions));
 	});
-	cb(insertSteps(test.steps, additions));
 }
 
 function insertSteps(steps, additions) {
