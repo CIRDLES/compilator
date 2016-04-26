@@ -4,7 +4,10 @@ var fs = require('fs-promise'),
 	basename = require('path').basename,
 	merge = require('merge'),
 	promise = require('promise'),
-	glob = require('glob-fs')({ gitignore: true });
+	glob = require('glob-fs')({ gitignore: true }),
+	ejs = require('ejs'),
+	pp = require('./config/preprocessor');
+	cc = require ('./config/conversions')
 
 
 var defaults = JSON.parse(fs.readFileSync('config/defaults.json', 'utf8'));
@@ -12,7 +15,6 @@ var defaults = JSON.parse(fs.readFileSync('config/defaults.json', 'utf8'));
 exports.compilate = (options) => {
 	if (options == undefined) options = defaults;
 	else options = merge(defaults, options);
-
 
 	glob.readdirPromise(options.testDir + '/*.test.json')
 	.then(function(files) {
@@ -33,7 +35,12 @@ exports.compilate = (options) => {
 
 					// compile each step into language-specific code
 					test.steps.forEach(function (step) {
-						languageCode += compile(conversions[step.type])(step.options) + '\n';
+						if (conversions[step.type] == '<>') {
+							console.log(cc[step.type](step.options))
+							languageCode += cc[step.type](step.options) + '\n';
+						} else {
+							languageCode += compile(conversions[step.type])(step.options) + '\n';
+						}
 
 						// interleave waits
 						if(test.hasOwnProperty("wait"))
@@ -70,12 +77,12 @@ function preprocess (test, options, schema) {
 			// check if step is a directive
 			if (preprocessor.hasOwnProperty(step.type)) {
 				var processorVars = processStep(step, preprocessor, schema);
-
+				
 				// memoize since we're blocking
 				if (directives[step.type] == undefined)
 					directives[step.type] = 
 						fs.readFileSync(options.directivesDir + '/' + step.type + '.directive', 'utf8');
-				
+
 				var newSteps = JSON.parse(compile(directives[step.type])(processorVars))
 				additions.push({steps: newSteps, originalPos: index});
 			}
@@ -103,9 +110,13 @@ function processStep(step, preprocessor, schema) {
 	if (step.options != undefined && step.options.selectors != undefined)
 		selectorOpts = { selectors: step.options.selectors };
 
-	var query = compile(currentPP.schemaSelector)(selectorOpts);
+	var query = null;
+	if (currentPP.schemaSelector !== '<>') {
+		query = compile(currentPP.schemaSelector)(selectorOpts);
+	} else {
+		query = pp[step.type](selectorOpts)
+	}
 	var components = jp.query(schema, query);
-	
 	// if an object is unique it is a single component
 	// otherwise it is an array of components
 	var processorVars = {};
