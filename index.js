@@ -6,8 +6,9 @@ var fs = require('fs-promise'),
 	promise = require('promise'),
 	glob = require('glob-fs')({ gitignore: true }),
 	ejs = require('ejs'),
-	pp = require('./config/preprocessor');
-	cc = require ('./config/conversions')
+	pp = require('./config/preprocessor'),
+	cc = require ('./config/conversions'),
+	dd = require('./config/directives')
 
 
 var defaults = JSON.parse(fs.readFileSync('config/defaults.json', 'utf8'));
@@ -36,7 +37,6 @@ exports.compilate = (options) => {
 					// compile each step into language-specific code
 					test.steps.forEach(function (step) {
 						if (conversions[step.type] == '<>') {
-							console.log(cc[step.type](step.options))
 							languageCode += cc[step.type](step.options) + '\n';
 						} else {
 							languageCode += compile(conversions[step.type])(step.options) + '\n';
@@ -79,11 +79,12 @@ function preprocess (test, options, schema) {
 				var processorVars = processStep(step, preprocessor, schema);
 				
 				// memoize since we're blocking
-				if (directives[step.type] == undefined)
-					directives[step.type] = 
-						fs.readFileSync(options.directivesDir + '/' + step.type + '.directive', 'utf8');
+				// if (directives[step.type] == undefined)
+				// 	directives[step.type] = 
+				// 		fs.readFileSync(options.directivesDir + '/' + step.type + '.directive', 'utf8');
 
-				var newSteps = JSON.parse(compile(directives[step.type])(processorVars))
+				var newSteps = dd[step.type](processorVars);
+				//var newSteps = JSON.parse(compile(directives[step.type])(processorVars))
 				additions.push({steps: newSteps, originalPos: index});
 			}
 		});
