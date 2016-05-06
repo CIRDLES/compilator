@@ -11,7 +11,7 @@
     "generation"
   ],
   "author": "Josh Lusk <luskjh@gmail.com> (http://www.trissino.net)",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "glob-promise": "^1.0.6",
     "glob-fs": "^0.1.6",
