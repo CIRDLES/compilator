@@ -1,8 +1,0 @@
-{
-	"clickOn"  : "<>",
-	"inputText": "swinger.enterText( {{{ text }}} );",
-	"mouseMove": "robot.mouseMove( {{{ x }}}, {{{ y }}} );",
-	"mouseDown": "robot.mousePress(InputEvent.BUTTON1_MASK);",
-	"mouseUp"  : "robot.mouseRelease(InputEvent.BUTTON1_MASK);",
-	"wait": "swinger.pause( {{{ wait }}} );"
-}

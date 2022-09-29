@@ -1,7 +1,0 @@
-{
-		"templateDir": "templates",
-		"outDir": "tests.out",
-		"directivesDir": "config/directives",
-		"schemasDir": "schemas",
-		"testDir": "tests.json"
-}
